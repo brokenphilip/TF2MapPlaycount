@@ -12,49 +12,34 @@ let data = [];
 // 7 - sort by time per match, higher-lower (v)
 let sort_mode = 0;
 
+let viewedSent = false;
+let playerstatsSent = false;
+
 window.onload = function() {
 	document.getElementById("input").addEventListener("change", handleFileSelect, false);
 	
 	let target = document.documentElement;
 	let body = document.body;
 
-	target.addEventListener('dragover', (e) => {
+	target.addEventListener("dragover", (e) => {
 		e.preventDefault();
-		body.classList.add('dragging');
-		console.log("dragover");
-		
-		//e.stopPropagation();
+		body.classList.add("dragging");
 	});
 
-	target.addEventListener('dragleave', () => {
-		body.classList.remove('dragging');
-		console.log("dragleave");
-		
-		//e.stopPropagation();
+	target.addEventListener("dragleave", () => {
+		body.classList.remove("dragging");
 	});
 
-	target.addEventListener('drop', (e) => {
+	target.addEventListener("drop", (e) => {
 		e.preventDefault();
-		body.classList.remove('dragging');
-		console.log("drop");
+		body.classList.remove("dragging");
 
 		parse(e.dataTransfer.files[0]);
-		
-		//e.stopPropagation();
 	});
-    
 };
 
 function handleFileSelect(e) {
 	parse(e.target.files[0]);
-}
-
-function handleDrop(e) {
-	// Prevent default behavior (file opening)
-	e.preventDefault();
-	document.getElementById("dnd").classList.remove("dragging");
-	
-	parse(e.dataTransfer.files[0]);
 }
 
 function parse(file) {
@@ -76,39 +61,96 @@ function parse(file) {
 }
 
 function handleViewed(e) {
-	console.log(e);
-	document.getElementById('fileContent').textContent = e.target.result;
+	if (viewedSent) {
+		alert("Processing failed - 'viewed.res' was already sent. Please reset your data first.");
+		return;
+	}
+	
+	let text = e.target.result;
+	
+	if (!text.startsWith("viewed.res", 1)) {
+		alert("Processing failed - 'viewed.res' appears to be malformed.");
+		return;
+	}
+	
+	let quotes = text.split("\"");
+	for (let i = 3; i < quotes.length; i += 6) {
+		addMapData(quotes[i], quotes[i + 4], "/");
+	}
+	
+	viewedSent = true;
+	document.getElementById("viewed").classList.add("attached");
+	formatTable();
 }
 
 function handlePlayerstats(e) {
-	console.log(e);
-	document.getElementById('fileContent').textContent = e.target.result;
+	if (playerstatsSent) {
+		alert("Processing failed - 'tf2_playerstats.dmx' was already sent. Please reset your data first.");
+		return;
+	}
+	
+	let text = e.target.result;
+	
+	if (!text.startsWith("dmx encoding keyvalues2 1 format dmx 1", 5)) {
+		alert("Processing failed - 'tf2_playerstats.dmx' appears to be malformed.");
+		return;
+	}
+	
+	let maps = text.split("\"MapStats_t\"");
+	for (let map in maps) {
+		// Skip garbage
+		if (map == 0) {
+			continue;
+		}
+		
+		let quotes = maps[map].split("\"");
+		
+		let mapname = quotes[27];
+		// Skip whatever this is
+		if (mapname == "Missing") {
+			continue;
+		}
+		
+		addMapData(mapname, "/", quotes[21]);
+	}
+	
+	playerstatsSent = true;
+	document.getElementById("playerstats").classList.add("attached");
+	formatTable();
 }
 
-function handleDragOver(e) {
-	e.preventDefault();
-}
-
-function handleDragEnter(e) {
-	e.preventDefault();
-	document.getElementById("dnd").classList.add("dragging");
-}
-
-function handleDragLeave(e) {
-	e.preventDefault();
-	document.getElementById("dnd").classList.remove("dragging");
+function addMapData(name, times_played, time_spent) {
+	// Search for existing entries first
+	for (let i in data) {
+		let entry = data[i];
+		if (entry[0] == name) {
+			// We got a new value for 'Times played'
+			if (times_played != "/" && entry[1] == "/") {
+				entry[1] = times_played;
+			}
+			
+			// We got a new value for 'Time spent'
+			if (time_spent != "/" && entry[2] == "/") {
+				entry[2] = time_spent;
+			}
+			
+			// We have both 'Times played' and 'Time spent' for this map, calculate 'Time per match'
+			if (entry[1] != "/" && entry[2] != "/") {
+				entry[3] = parseFloat(entry[2]) / parseFloat(entry[1]);
+			}
+			
+			return;
+		}
+	}
+	
+	// If not found, add our entry
+	data.push([name, times_played, time_spent, "/"]);
 }
 
 function formatTable() {
-	let sort_mode = 0;
-	//data = [];
-	
-	data.push([1, "map1", 10, 60, 60/10]);
-	data.push([2, "map2", 5, 25, 25/5]);
-
 	let result = document.getElementById("result");
 	
-	// Can't set innerHTML directly, otherwise it will prematurely close the <ul> for us
+	// Can't set innerHTML directly, otherwise it will prematurely close tags for us
 	let content = "<hr><table><tr>";
 	
 	for (let i = 0; i < header.length; i++) {
@@ -117,35 +159,87 @@ function formatTable() {
 		}
 		
 		else {
-			content += "<th onclick='sort(" + (i - 1) + ")' >" + header[i] + "</th>";
+			let arrow = " &nbsp;&nbsp; ";
+			if (sort_mode == i - 1) {
+				arrow = " &uarr; ";
+			}
+			else if (sort_mode == i + 3) {
+				arrow = " &darr; ";
+			}
+			content += "<th onclick='sort(" + (i - 1) + ")' >" + arrow + header[i] + arrow + "</th>";
 		}
 	}
 	
+	let sorted = data.sort(function(a, b) {
+		// Make sure unset values sink to the bottom
+		if (a[sort_mode] == "/") {
+			return (sort_mode < 4)? 1 : -1;
+		}
+		if (b[sort_mode] == "/") {
+			return (sort_mode < 4)? -1 : 1;
+		}
+
+		switch (sort_mode) {
+			case 0: return a[0].localeCompare(b[0]);
+			case 1: return a[1] - b[1];
+			case 2: return a[2] - b[2];
+			case 3: return a[3] - b[3];
+			case 4: return b[0].localeCompare(a[0]);
+			case 5: return b[1] - a[1];
+			case 6: return b[2] - a[2];
+			case 7: return b[3] - a[3];
+		}
+	});
+	
 	content += "</tr>";
 	
-	for (let i = 0; i < data.length; i++) {
+	for (let i = 0; i < sorted.length; i++) {
 		content += "<tr>";
 		
-		for (let j = 0; j < data[i].length; j++) {
-			content += "<td>" + data[i][j] + "</td>";
+		content += "<td>" + (i+1) + "</td>";
+		for (let j = 0; j < sorted[i].length; j++) {
+			let val = sorted[i][j];
+			
+			// Format time-related columns
+			if (j > 1 && val != "/") {
+				let hours = Math.floor(val / 3600);
+				val %= 3600;
+				minutes = Math.floor(val / 60).toString().padStart(2, '0');
+				seconds = Math.floor(val % 60).toString().padStart(2, '0');
+				
+				val = hours + ":" + minutes + ":" + seconds;
+			}
+			
+			content += "<td>" + val + "</td>";
 		}
 		
 		content += "</tr>";
 	}
-	
-	
 	
 	content += "</table>"
 	result.innerHTML = content;
 }
 
 function sort(mode) {
-	alert("Sorting with mode " + mode);
-	sort_mode = mode;
+	// Reverse the sort if we selected the same column
+	if (sort_mode == mode) {
+		sort_mode += 4;
+		
+		// Loop back if we went out of bounds
+		sort_mode %= 8;
+	}
+	else {
+		sort_mode = mode;
+	}
+	
 	formatTable();
 }
 
 function resetData() {
 	data = [];
-	formatTable();
+	document.getElementById("result").innerHTML = "";
+	viewedSent = false;
+	playerstatsSent = false;
+	document.getElementById("viewed").classList.remove("attached");
+	document.getElementById("playerstats").classList.remove("attached");
 }

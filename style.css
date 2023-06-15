@@ -6,3 +6,7 @@ ul {
 	pointer-events: none;
     background-color: #DDFFDD;
 }
+
+.attached {
+    color: #00AA00;
+}
