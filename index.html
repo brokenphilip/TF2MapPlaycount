@@ -2,57 +2,129 @@
 <html lang="en">
 	<head>
 		<script>
-		function init() {
-			document.getElementById('fileInput').addEventListener('change', handleFileSelect, false);
-		}
-
-		function handleFileSelect(event) {
-			const reader = new FileReader()
-			reader.onload = handleFileLoad;
-			reader.readAsText(event.target.files[0])
-		}
-
-		function handleFileLoad(event) {
-			console.log(event);
-			document.getElementById('fileContent').textContent = event.target.result;
-		}
+			const header = ["#", "Name", "Times played", "Time spent", "Time per match"];
+			
+			let data = [];
+			
+			// 0 - sort by name, A-Z (^)
+			// 1 - sort by times played, higher-lower (v)
+			// 2 - sort by time spent, higher-lower (v)
+			// 3 - sort by time per match, higher-lower (v)
+			// 4 - sort by name, Z-A (v)
+			// 5 - sort by times played, lower-higher (^)
+			// 6 - sort by time spent, lower-higher (^)
+			// 7 - sort by time per match, lower-higher (^)
+			let sort_mode = 0;
+			
+			window.onload = function() {
+				document.getElementById("input").addEventListener("change", handleFileSelect, false);
+			};
 		
-		function handleDrop(ev) {
-			console.log("File(s) dropped");
-
-			// Prevent default behavior (Prevent file from being opened)
-			ev.preventDefault();
-
-			if (ev.dataTransfer.items) {
-				// Use DataTransferItemList interface to access the file(s)
-				[...ev.dataTransfer.items].forEach((item, i) => {
-					// If dropped items aren't files, reject them
-					if (item.kind === "file") {
-						const file = item.getAsFile();
-						console.log(`… file[${i}].name = ${file.name}`);
-					}
-				});
-			} else {
-				// Use DataTransfer interface to access the file(s)
-				[...ev.dataTransfer.files].forEach((file, i) => {
-					console.log(`… file[${i}].name = ${file.name}`);
-				});
+			function handleFileSelect(e) {
+				parse(e.target.files[0]);
 			}
-		}
+			
+			function handleDrop(e) {
+				// Prevent default behavior (file opening)
+				e.preventDefault();
+				
+				parse(e.dataTransfer.files[0]);
+			}
+			
+			function parse(file) {
+				const reader = new FileReader();
+				
+				let name = file.name;
+				if (name == "viewed.res") {
+					reader.onload = handleViewed;
+				}
+				else if (name == "tf2_playerstats.dmx") {
+					reader.onload = handlePlayerstats;
+				}
+				else {
+					alert("Invalid file name. Make sure you are only uploading either 'viewed.res' or 'tf2_playerstats.dmx'.");
+					return;
+				}
+				
+				reader.readAsText(file);
+			}
+			
+			function handleViewed(e) {
+				console.log(e);
+				document.getElementById('fileContent').textContent = e.target.result;
+			}
+			
+			function handlePlayerstats(e) {
+				console.log(e);
+				document.getElementById('fileContent').textContent = e.target.result;
+			}
 
-		function handleDragOver(ev) {
-			console.log("File(s) in drop zone");
-
-			// Prevent default behavior (Prevent file from being opened)
-			ev.preventDefault();
-		}
+			function handleDragOver(e) {
+				e.preventDefault();
+				
+				
+			}
+			
+			function formatTable() {
+				let sort_mode = 0;
+				//data = [];
+				
+				data.push([1, "map1", 10, 60, 60/10]);
+				data.push([2, "map2", 5, 25, 25/5]);
+			
+				let result = document.getElementById("result");
+				
+				// Can't set innerHTML directly, otherwise it will prematurely close the <ul> for us
+				let content = "<table><tr>";
+				
+				for (let i = 0; i < header.length; i++) {
+					if (i == 0) {
+						content += "<th>" + header[i] + "</th>";
+					}
+					
+					else {
+						content += "<th onclick='sort(" + (i - 1) + ")' >" + header[i] + "</th>";
+					}
+				}
+				
+				content += "</tr>";
+				
+				for (let i = 0; i < data.length; i++) {
+					content += "<tr>";
+					
+					for (let j = 0; j < data[i].length; j++) {
+						content += "<td>" + data[i][j] + "</td>";
+					}
+					
+					content += "</tr>";
+				}
+				
+				
+				
+				content += "</table>"
+				result.innerHTML = content;
+			}
+			
+			function sort(mode) {
+				alert("Sorting with mode " + mode);
+				sort_mode = mode;
+				formatTable();
+			}
+			
+			function resetData() {
+				data = [];
+				formatTable();
+			}
 		</script>
 	</head>
-	<body onload="init()">
-		<input id="fileInput" type="file" name="file" />
-		<pre id="fileContent"></pre>
+	<body>
 		<div ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
+			<input type="file" id="input" onfileselect="handleFileSelect(event)" />
+			<input type="button" onclick="resetData()" value="Reset data" />
+			<input type="button" onclick="formatTable()" value="Test" />
+			<pre id="fileContent"></pre>
 			<h1>DragDrop here</h1>
+			<div id="result"></div>
 		</div>
 	</body>
 </html>
