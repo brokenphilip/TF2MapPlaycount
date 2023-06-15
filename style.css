@@ -1,0 +1,8 @@
+ul {
+	margin: 0;
+}
+
+.dragging {
+	pointer-events: none;
+    background-color: #DDFFDD;
+}

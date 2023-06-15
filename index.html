@@ -1,130 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<script>
-			const header = ["#", "Name", "Times played", "Time spent", "Time per match"];
-			
-			let data = [];
-			
-			// 0 - sort by name, A-Z (^)
-			// 1 - sort by times played, higher-lower (v)
-			// 2 - sort by time spent, higher-lower (v)
-			// 3 - sort by time per match, higher-lower (v)
-			// 4 - sort by name, Z-A (v)
-			// 5 - sort by times played, lower-higher (^)
-			// 6 - sort by time spent, lower-higher (^)
-			// 7 - sort by time per match, lower-higher (^)
-			let sort_mode = 0;
-			
-			window.onload = function() {
-				document.getElementById("input").addEventListener("change", handleFileSelect, false);
-			};
+		<title>TF2 Map Playcount</title>
 		
-			function handleFileSelect(e) {
-				parse(e.target.files[0]);
-			}
-			
-			function handleDrop(e) {
-				// Prevent default behavior (file opening)
-				e.preventDefault();
-				
-				parse(e.dataTransfer.files[0]);
-			}
-			
-			function parse(file) {
-				const reader = new FileReader();
-				
-				let name = file.name;
-				if (name == "viewed.res") {
-					reader.onload = handleViewed;
-				}
-				else if (name == "tf2_playerstats.dmx") {
-					reader.onload = handlePlayerstats;
-				}
-				else {
-					alert("Invalid file name. Make sure you are only uploading either 'viewed.res' or 'tf2_playerstats.dmx'.");
-					return;
-				}
-				
-				reader.readAsText(file);
-			}
-			
-			function handleViewed(e) {
-				console.log(e);
-				document.getElementById('fileContent').textContent = e.target.result;
-			}
-			
-			function handlePlayerstats(e) {
-				console.log(e);
-				document.getElementById('fileContent').textContent = e.target.result;
-			}
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		
+		<meta name="title" content="TF2 Map Playcount">
+		<meta name="description" content="Check your TF2 map playcounts.">
 
-			function handleDragOver(e) {
-				e.preventDefault();
-				
-				
-			}
-			
-			function formatTable() {
-				let sort_mode = 0;
-				//data = [];
-				
-				data.push([1, "map1", 10, 60, 60/10]);
-				data.push([2, "map2", 5, 25, 25/5]);
-			
-				let result = document.getElementById("result");
-				
-				// Can't set innerHTML directly, otherwise it will prematurely close the <ul> for us
-				let content = "<table><tr>";
-				
-				for (let i = 0; i < header.length; i++) {
-					if (i == 0) {
-						content += "<th>" + header[i] + "</th>";
-					}
-					
-					else {
-						content += "<th onclick='sort(" + (i - 1) + ")' >" + header[i] + "</th>";
-					}
-				}
-				
-				content += "</tr>";
-				
-				for (let i = 0; i < data.length; i++) {
-					content += "<tr>";
-					
-					for (let j = 0; j < data[i].length; j++) {
-						content += "<td>" + data[i][j] + "</td>";
-					}
-					
-					content += "</tr>";
-				}
-				
-				
-				
-				content += "</table>"
-				result.innerHTML = content;
-			}
-			
-			function sort(mode) {
-				alert("Sorting with mode " + mode);
-				sort_mode = mode;
-				formatTable();
-			}
-			
-			function resetData() {
-				data = [];
-				formatTable();
-			}
-		</script>
+		<meta property="og:title" content="TF2 Map Playcount">
+		<meta property="og:site_name" content="TF2 Map Playcount">
+		<meta property="og:description" content="Check your TF2 map playcounts.">
+		<meta property="og:type" content="website">
+		<meta property="og:url" content="https://brokenphilip.github.io/TF2MapPlaycount/">
+		
+		<link rel="stylesheet" href="style.css">
+		<script src="main.js"></script>
 	</head>
 	<body>
-		<div ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
-			<input type="file" id="input" onfileselect="handleFileSelect(event)" />
-			<input type="button" onclick="resetData()" value="Reset data" />
-			<input type="button" onclick="formatTable()" value="Test" />
-			<pre id="fileContent"></pre>
-			<h1>DragDrop here</h1>
-			<div id="result"></div>
-		</div>
+		<h1>TF2 Map Playcount</h1>
+		<h2>Give suggestions or report issues <a href="https://github.com/brokenphilip/TF2MapPlaycount" target="_blank">here.</a></h2>
+		<input type="file" id="input" onfileselect="handleFileSelect(event)">
+		<p><strong>Attach the following files</strong> (using the "Choose file" option above, or by <span id="dnd">drag & drop</span>):</p>
+		<ul>
+			<li><strong>viewed.res</strong> (from "Team Fortress 2\tf\media") - shows times played (official and community maps)
+			<li><strong>tf2_playercount.dmx</strong> (from "Team Fortress 2\tf") - shows time spent (for official maps only)
+		</ul>
+		<p>If you wish to reattach the files and update your data, you must <strong>reset it first</strong>.</p>
+		<input type="button" onclick="resetData()" value="Reset data">
+		<input type="button" onclick="formatTable()" value="Test">
+		<div id="result"></div>
 	</body>
 </html>
