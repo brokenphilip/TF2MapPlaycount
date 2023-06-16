@@ -1,4 +1,4 @@
-# [TF2 Map Playcount v0.2](https://brokenphilip.github.io/TF2MapPlaycount/)
+# [TF2 Map Playcount v0.3](https://brokenphilip.github.io/TF2MapPlaycount/)
 - Displays information about map playcounts from **viewed.res/tf2_playerstats.dmx**.
 - Follow the instructions on the page for how to find these files and attach them for reading.
 - All files attached are processed locally on your computer, none of your information is uploaded nor stored.

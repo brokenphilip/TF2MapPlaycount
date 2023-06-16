@@ -123,6 +123,7 @@ function addMapData(name, times_played, time_spent) {
 	// Search for existing entries first
 	for (let i in data) {
 		let entry = data[i];
+		
 		if (entry[0] == name) {
 			// We got a new value for 'Times played'
 			if (times_played != "/" && entry[1] == "/") {
@@ -144,6 +145,7 @@ function addMapData(name, times_played, time_spent) {
 	}
 	
 	// If not found, add our entry
+	// This assumes the function never gets called with both times_played and time_spent (which is true)
 	data.push([name, times_played, time_spent, "/"]);
 }
 
