@@ -10,3 +10,29 @@ ul {
 .attached {
     color: #00AA00;
 }
+
+table {
+	border-collapse: collapse;
+}
+
+td, th {
+	border: 1px solid #DDDDDD;
+	padding: 4px;
+}
+
+tr:nth-child(even) {
+	background-color: #F2F2F2;
+}
+
+tr:nth-child(odd) {
+	background-color: #FFFFFF;
+}
+
+tr:hover {
+	background-color: #DDDDDD;
+}
+
+th {
+	background-color: #404040;
+	color: white;
+}
