@@ -201,7 +201,7 @@ function formatTable()
 	let result = document.getElementById("result");
 	
 	// Can't set innerHTML directly, otherwise it will prematurely close tags for us
-	let content = "<hr><table><tr>";
+	let content = "<table><tr>";
 	
 	for (let i = 0; i < header.length; i++)
 	{
@@ -251,6 +251,11 @@ function formatTable()
 	
 	content += "</tr>";
 	
+	let ttp = 0;
+	let tts = 0;
+	let ttpm = 0;
+	let tpmc = 0;
+	
 	for (let i = 0; i < sorted.length; i++)
 	{
 		content += "<tr>";
@@ -260,13 +265,28 @@ function formatTable()
 		{
 			let val = sorted[i][j];
 			
+			if (j == 1 && val != "/")
+			{
+				ttp += Number(val);
+			}
+			
 			// Format time-related columns
 			if (j > 1 && val != "/")
 			{
+				if (j == 2)
+				{
+					tts += Number(val);
+				}
+				if (j == 3 && val > 0)
+				{
+					ttpm += Number(val);
+					tpmc++;
+				}
+				
 				let hours = Math.floor(val / 3600);
 				val %= 3600;
-				minutes = Math.floor(val / 60).toString().padStart(2, '0');
-				seconds = Math.floor(val % 60).toString().padStart(2, '0');
+				let minutes = Math.floor(val / 60).toString().padStart(2, '0');
+				let seconds = Math.floor(val % 60).toString().padStart(2, '0');
 				
 				val = hours + ":" + minutes + ":" + seconds;
 			}
@@ -278,7 +298,34 @@ function formatTable()
 	}
 	
 	content += "</table>"
-	result.innerHTML = content;
+	
+	result.innerHTML = "<hr>";
+	
+	if (ttp > 0)
+	{
+		result.innerHTML += "<p><strong>Total times played:</strong> " + ttp + "</p>";
+	}
+	
+	if (tts > 0)
+	{
+		let tts_h = Math.floor(tts / 3600);
+		tts %= 3600;
+		let tts_m = Math.floor(tts / 60).toString().padStart(2, '0');
+		let tts_s = Math.floor(tts % 60).toString().padStart(2, '0');
+		result.innerHTML += "<p><strong>Total time spent:</strong> " + tts_h + ":" + tts_m + ":" + tts_s + "</p>";
+		
+		if (tpmc > 0)
+		{
+			let atpm = ttpm / tpmc;
+			let atpm_h = Math.floor(atpm / 3600);
+			atpm %= 3600;
+			let atpm_m = Math.floor(atpm / 60).toString().padStart(2, '0');
+			let atpm_s = Math.floor(atpm % 60).toString().padStart(2, '0');
+			result.innerHTML += "<p><strong>Average time per match:</strong> " + atpm_h + ":" + atpm_m + ":" + atpm_s + "</p>";
+		}
+	}
+	
+	result.innerHTML += content;
 	
 	//add_drop("th");
 }
