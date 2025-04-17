@@ -19,17 +19,19 @@
 		<script src="main.js"></script>
 	</head>
 	<body>
-		<h1>TF2 Map Playcount v0.3</h1>
+		<h1>TF2 Map Playcount v1.0</h1>
 		<h2>For more info (or giving suggestions/reporting bugs), click <a href="https://github.com/brokenphilip/TF2MapPlaycount" target="_blank">here.</a></h2>
 		<input type="file" id="input" onfileselect="handleFileSelect(event)">
-		<p><strong>Attach the following files one-by-one</strong> (using the "Choose File" option above, or by <span id="dnd">drag & drop</span>):</p>
+		<p><strong>Attach the following files one-by-one</strong> (using the <strong>"Choose File"</strong> option above, or by <strong>drag & drop</strong>):</p>
 		<ul>
 			<li><strong id="viewed">viewed.res</strong> (from "Team Fortress 2\tf\media") - shows times played (official and community maps)
 			<li><strong id="playerstats">tf2_playerstats.dmx</strong> (from "Team Fortress 2\tf") - shows time spent (for official maps only)
 		</ul>
+		<p><strong>No data is sent anywhere</strong> - your browser does all the work, locally on your machine.</p>
+		<p>Some data may be <strong>wrong or missing</strong> - unfortunately, this is a TF2 limitation.</p>
 		<p>If you wish to reattach the files and update your data, you must <strong>reset it first</strong>.</p>
 		<input type="button" onclick="resetData()" value="Reset data">
-		<p>"Time per match" will be calculated when both files have been uploaded. Times are formatted in <strong>H:MM:SS</strong>.</p>
+		<p>"Time per match" will be calculated when both files have been attached. Times are formatted in <strong>H:MM:SS</strong>.</p>
 		<div id="result"></div>
 	</body>
 </html>

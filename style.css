@@ -1,42 +1,72 @@
-body {
+body
+{
 	font-family: Arial;
+	pointer-events: none;
 }
 
-ul {
+th, input, a
+{
+	pointer-events: auto;
+}
+
+.dragging th
+{
+	pointer-events: none;
+}
+
+.dragging input
+{
+	pointer-events: none;
+}
+
+.dragging a
+{
+	pointer-events: none;
+}
+
+ul
+{
 	margin: 0;
 }
 
-.dragging {
-	pointer-events: none;
+.dragging
+{
     background-color: #DDFFDD;
 }
 
-.attached {
+.attached
+{
     color: #00AA00;
 }
 
-table {
+table
+{
 	border-collapse: collapse;
 }
 
-td, th {
+td, th
+{
 	border: 1px solid #DDDDDD;
 	padding: 4px;
 }
 
-tr:nth-child(even) {
+tr:nth-child(even)
+{
 	background-color: #F2F2F2;
 }
 
-tr:nth-child(odd) {
+tr:nth-child(odd)
+{
 	background-color: #FFFFFF;
 }
 
-tr:hover {
+tr:hover
+{
 	background-color: #DDDDDD;
 }
 
-th {
+th
+{
 	background-color: #404040;
 	color: white;
 }

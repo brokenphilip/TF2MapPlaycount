@@ -14,67 +14,102 @@ let sort_mode = 0;
 
 let viewedSent = false;
 let playerstatsSent = false;
-
-window.onload = function() {
-	document.getElementById("input").addEventListener("change", handleFileSelect, false);
+/*
+function add_drop(elem_tag)
+{
+	var all = Array.prototype.slice.call(document.getElementsByTagName(elem_tag));
 	
+	all.forEach(function(elem)
+	{
+		elem.addEventListener("drop", (e) =>
+		{
+			e.preventDefault();
+			parse(e.dataTransfer.files[0]);
+		});
+	});
+}
+*/
+window.onload = function()
+{
+	document.getElementById("input").addEventListener("change", handleFileSelect, false);
+
 	let target = document.documentElement;
-	let body = document.body;
 
-	target.addEventListener("dragover", (e) => {
+	target.addEventListener("dragover", (e) =>
+	{
+		if (event.target === target)
+		{
+			e.preventDefault();
+			target.classList.add("dragging");
+		}
+	});
+
+	target.addEventListener("dragleave", () =>
+	{
+		target.classList.remove("dragging");
+	});
+
+	target.addEventListener("drop", (e) =>
+	{
 		e.preventDefault();
-		body.classList.add("dragging");
+		target.classList.remove("dragging");
+		
+		for (let i = 0; i < e.dataTransfer.files.length; i++)
+		{
+			parse(e.dataTransfer.files[i]);
+		}
 	});
 
-	target.addEventListener("dragleave", () => {
-		body.classList.remove("dragging");
-	});
-
-	target.addEventListener("drop", (e) => {
-		e.preventDefault();
-		body.classList.remove("dragging");
-
-		parse(e.dataTransfer.files[0]);
-	});
+	//add_drop("input");
+	//add_drop("a");
 };
 
-function handleFileSelect(e) {
+function handleFileSelect(e)
+{
 	parse(e.target.files[0]);
 }
 
-function parse(file) {
+function parse(file)
+{
 	const reader = new FileReader();
 	
 	let name = file.name;
-	if (name == "viewed.res") {
+	if (name == "viewed.res")
+	{
 		reader.onload = handleViewed;
 	}
-	else if (name == "tf2_playerstats.dmx") {
+	else if (name == "tf2_playerstats.dmx")
+	{
 		reader.onload = handlePlayerstats;
 	}
-	else {
-		alert("Invalid file name. Make sure you are only uploading either 'viewed.res' or 'tf2_playerstats.dmx'.");
+	else
+	{
+		alert("Invalid file name '" + name + "'. Make sure you are only uploading either 'viewed.res' or 'tf2_playerstats.dmx'.");
 		return;
 	}
 	
 	reader.readAsText(file);
 }
 
-function handleViewed(e) {
-	if (viewedSent) {
+function handleViewed(e)
+{
+	if (viewedSent)
+	{
 		alert("Processing failed - 'viewed.res' was already sent. Please reset your data first.");
 		return;
 	}
 	
 	let text = e.target.result;
 	
-	if (!text.startsWith("viewed.res", 1)) {
+	if (!text.startsWith("viewed.res", 1))
+	{
 		alert("Processing failed - 'viewed.res' appears to be malformed.");
 		return;
 	}
 	
 	let quotes = text.split("\"");
-	for (let i = 3; i < quotes.length; i += 6) {
+	for (let i = 3; i < quotes.length; i += 6)
+	{
 		addMapData(quotes[i], quotes[i + 4], "/");
 	}
 	
@@ -83,31 +118,37 @@ function handleViewed(e) {
 	formatTable();
 }
 
-function handlePlayerstats(e) {
-	if (playerstatsSent) {
+function handlePlayerstats(e)
+{
+	if (playerstatsSent)
+	{
 		alert("Processing failed - 'tf2_playerstats.dmx' was already sent. Please reset your data first.");
 		return;
 	}
 	
 	let text = e.target.result;
 	
-	if (!text.startsWith("dmx encoding keyvalues2 1 format dmx 1", 5)) {
+	if (!text.startsWith("dmx encoding keyvalues2 1 format dmx 1", 5))
+	{
 		alert("Processing failed - 'tf2_playerstats.dmx' appears to be malformed.");
 		return;
 	}
 	
 	let maps = text.split("\"MapStats_t\"");
-	for (let map in maps) {
+	for (let map in maps)
+	{
 		// Skip garbage
-		if (map == 0) {
+		if (map == 0)
+		{
 			continue;
 		}
 		
 		let quotes = maps[map].split("\"");
-		
 		let mapname = quotes[27];
+		
 		// Skip whatever this is
-		if (mapname == "Missing") {
+		if (mapname == "Missing")
+		{
 			continue;
 		}
 		
@@ -119,24 +160,30 @@ function handlePlayerstats(e) {
 	formatTable();
 }
 
-function addMapData(name, times_played, time_spent) {
+function addMapData(name, times_played, time_spent)
+{
 	// Search for existing entries first
-	for (let i in data) {
+	for (let i in data)
+	{
 		let entry = data[i];
 		
-		if (entry[0] == name) {
+		if (entry[0] == name)
+		{
 			// We got a new value for 'Times played'
-			if (times_played != "/" && entry[1] == "/") {
+			if (times_played != "/" && entry[1] == "/")
+			{
 				entry[1] = times_played;
 			}
 			
 			// We got a new value for 'Time spent'
-			if (time_spent != "/" && entry[2] == "/") {
+			if (time_spent != "/" && entry[2] == "/")
+			{
 				entry[2] = time_spent;
 			}
 			
 			// We have both 'Times played' and 'Time spent' for this map, calculate 'Time per match'
-			if (entry[1] != "/" && entry[2] != "/") {
+			if (entry[1] != "/" && entry[2] != "/")
+			{
 				entry[3] = parseFloat(entry[2]) / parseFloat(entry[1]);
 			}
 			
@@ -149,39 +196,48 @@ function addMapData(name, times_played, time_spent) {
 	data.push([name, times_played, time_spent, "/"]);
 }
 
-function formatTable() {
+function formatTable()
+{
 	let result = document.getElementById("result");
 	
 	// Can't set innerHTML directly, otherwise it will prematurely close tags for us
 	let content = "<hr><table><tr>";
 	
-	for (let i = 0; i < header.length; i++) {
-		if (i == 0) {
+	for (let i = 0; i < header.length; i++)
+	{
+		if (i == 0)
+		{
 			content += "<th>" + header[i] + "</th>";
 		}
-		
-		else {
+		else
+		{
 			let arrow = " &nbsp;&nbsp; ";
-			if (sort_mode == i - 1) {
+			if (sort_mode == i - 1)
+			{
 				arrow = " &uarr; ";
 			}
-			else if (sort_mode == i + 3) {
+			else if (sort_mode == i + 3)
+			{
 				arrow = " &darr; ";
 			}
 			content += "<th onclick='sort(" + (i - 1) + ")' >" + arrow + header[i] + arrow + "</th>";
 		}
 	}
 	
-	let sorted = data.sort(function(a, b) {
+	let sorted = data.sort(function(a, b)
+	{
 		// Make sure unset values sink to the bottom
-		if (a[sort_mode] == "/") {
+		if (a[sort_mode] == "/")
+		{
 			return (sort_mode < 4)? 1 : -1;
 		}
-		if (b[sort_mode] == "/") {
+		if (b[sort_mode] == "/")
+		{
 			return (sort_mode < 4)? -1 : 1;
 		}
 
-		switch (sort_mode) {
+		switch (sort_mode)
+		{
 			case 0: return a[0].localeCompare(b[0]);
 			case 1: return a[1] - b[1];
 			case 2: return a[2] - b[2];
@@ -195,15 +251,18 @@ function formatTable() {
 	
 	content += "</tr>";
 	
-	for (let i = 0; i < sorted.length; i++) {
+	for (let i = 0; i < sorted.length; i++)
+	{
 		content += "<tr>";
 		
 		content += "<td>" + (i+1) + "</td>";
-		for (let j = 0; j < sorted[i].length; j++) {
+		for (let j = 0; j < sorted[i].length; j++)
+		{
 			let val = sorted[i][j];
 			
 			// Format time-related columns
-			if (j > 1 && val != "/") {
+			if (j > 1 && val != "/")
+			{
 				let hours = Math.floor(val / 3600);
 				val %= 3600;
 				minutes = Math.floor(val / 60).toString().padStart(2, '0');
@@ -220,24 +279,30 @@ function formatTable() {
 	
 	content += "</table>"
 	result.innerHTML = content;
+	
+	//add_drop("th");
 }
 
-function sort(mode) {
+function sort(mode)
+{
 	// Reverse the sort if we selected the same column
-	if (sort_mode == mode) {
+	if (sort_mode == mode)
+	{
 		sort_mode += 4;
 		
 		// Loop back if we went out of bounds
 		sort_mode %= 8;
 	}
-	else {
+	else
+	{
 		sort_mode = mode;
 	}
 	
 	formatTable();
 }
 
-function resetData() {
+function resetData()
+{
 	data = [];
 	document.getElementById("result").innerHTML = "";
 	viewedSent = false;
